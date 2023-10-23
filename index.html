@@ -49,6 +49,7 @@ mocho.setAttribute('Style','left:'+ (event.clientX/0.5 -50)+'px;'+'top:'+ (event
     let initialDivX, initialDivY;
 
     movableDiv.addEventListener('touchstart', (e) => {
+      e.preventDefault();
       isDragging = true;
       const touch = e.touches[0];
       touchStartX = touch.clientX;
