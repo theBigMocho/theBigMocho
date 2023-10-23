@@ -13,6 +13,14 @@ left:50%;
 zoom:0.5;
 
 }
+
+    #movableDiv {
+      width: 100px;
+      height: 100px;
+      background-color: lightblue;
+      position: absolute;
+    }
+
 </style>
 </header>
 <body onmousemove="go_mocho_go(event)">
@@ -24,7 +32,7 @@ zoom:0.5;
     <div>Mientras se me ocurre hacer algo interesante que hacer</div>
     <div>Mocho por el momento se moverá con el puntero </div>
 </body>
-
+<div id="movableDiv"></div>
 <script>
     const go_mocho_go = (event)=>{
 console.log(event)
@@ -33,5 +41,35 @@ mocho.setAttribute('Style','left:'+ (event.clientX/0.5 -50)+'px;'+'top:'+ (event
 
     }
 </script>
+<script>
+    const movableDiv = document.getElementById('movableDiv');
+
+    let isDragging = false;
+    let touchStartX, touchStartY;
+    let initialDivX, initialDivY;
+
+    movableDiv.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      initialDivX = movableDiv.offsetLeft;
+      initialDivY = movableDiv.offsetTop;
+    });
+
+    movableDiv.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+        movableDiv.style.left = initialDivX + deltaX + 'px';
+        movableDiv.style.top = initialDivY + deltaY + 'px';
+      }
+    });
+
+    movableDiv.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+  </script>
 
 </html>
