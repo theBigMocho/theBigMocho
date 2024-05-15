@@ -1,7 +1,10 @@
 <html>
 <header>
 <title>TBM8 | thebigMocho</title>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="datos-sitio.js"></script>
+<script src="glcdfont.js"></script>
+<script src="traduccion.js"></script>
 <style>
 .logo{
 width: 100px;
@@ -22,6 +25,55 @@ zoom:0.5;
     }
 
 </style>
+
+<style>
+  .pixel {
+      width: 4px;
+      height: 4px;
+      background-color: black;
+      border: 1px solid rgb(71, 0, 0);
+      border-radius: 1px;
+
+  }
+
+  .matriz,
+  .col {
+      float: right;
+      background-color: black;
+  }
+
+  .on {
+      background-color: red;
+      box-shadow: 0px 0px 10px 1px rgb(237, 129, 129);
+      z-index: 10;
+  }
+
+  #Fila8x8{
+      position: absolute;
+      top: 150px;
+      left: calc(50vw - 380px);
+  }
+  #consola {
+      height:300px;
+      width:310px;
+      position: absolute;
+      top: 500px;
+      left: 400px;
+      border: 1px solid gray;
+      overflow-y: scroll;
+
+  }
+  #traduccionaire {
+      height:300px;
+      width:310px;
+      position: absolute;
+      top: 500px;
+      left: 0px;
+      border: 1px solid gray;
+      overflow-y: scroll;
+
+  }
+</style>
 </header>
 <body onmousemove="go_mocho_go(event)">
 
@@ -32,6 +84,11 @@ zoom:0.5;
     <div>Mientras se me ocurre hacer algo interesante que hacer</div>
     <div>Mocho por el momento se moverá con el puntero </div>
     <img src="https://drive.google.com/file/d/17hAUndg2SXcGF58DY43lLFafOAvCj82y/view?usp=drivesdk"/>
+
+    <div id="consola"></div>
+    <div id="traduccionaire"></div>
+    <div id="Fila8x8"></div>
+
 </body>
 <div id="movableDiv"></div>
 <script>
@@ -74,4 +131,232 @@ mocho.setAttribute('Style','left:'+ (event.clientX/0.5 -50)+'px;'+'top:'+ (event
     });
   </script>
 
+<script>
+  const cantidadMatrices = 15;
+      function agregaLineaConsola(linea) {
+          const html = `<div>${linea}</div>`;
+          $('#consola').prepend(html);
+      }
+      function crea8x8(matriz) {
+          let html = '<div class="matriz">';
+          for (let col = 0; col < 8; col++) {
+              html += `<div class="col">`;
+              for (let row = 0; row < 8; row++) {
+                  html += `<div id="${matriz}-${7 - col}-${7 - row}" class="pixel"></div>`;
+              }
+              html += `</div>`;
+          }
+          html += `</div>`;
+          $('#Fila8x8').append(html);
+      }
+      function agregaLineaTraduccionAire(linea) {
+          const html = `<div>${linea}</div>`;
+          $('#traduccionaire').prepend(html);
+      }
+  
+  
+  
+  
+      function creaLineaMatrix() {
+          for (let i = 0; i < cantidadMatrices; i++) {
+              crea8x8(cantidadMatrices - 1 - i);
+          }
+      }
+  
+  
+      creaLineaMatrix();
+  
+  
+      function letraToMatriz(letra) {
+          const index = letra.charCodeAt(0);
+          return fonts[index];
+      }
+      function filaMatrizArrBin(fila) {
+          let filaBin = fila.toString(2);
+          const falta = 8 - filaBin.length;
+          for (let i = 0; i < falta; i++) {
+              filaBin = '0' + filaBin;
+          }
+          return filaBin.split('');
+  
+      };
+      function muestraLetraEnMatriz(matriz, letra) {
+          const ltm = letraToMatriz(letra)
+          for (let col = 0; col < 8; col++) {
+              filarray = filaMatrizArrBin(ltm[col]);
+              for (let row = 0; row < 8; row++) {
+                  $(`#${matriz}-${col}-${row}`).removeClass('on')
+                  if (filarray[row] == '1') {
+                      $(`#${matriz}-${col}-${row}`).addClass('on');
+                  }
+              }
+          }
+      }
+  
+      function muestraFilaMatriz(matriz, col, filarray) {
+          for (let row = 0; row < 8; row++) {
+              $(`#${matriz}-${col}-${row}`).removeClass('on')
+              if (filarray[row] == '1') {
+                  $(`#${matriz}-${col}-${row}`).addClass('on');
+              }
+          }
+      }
+  
+      function generaFilas(msg) {
+          const msg_txt = msg;
+          const msg_arr = msg_txt.split('');
+          const filasMatriz = [];
+          for (let i = 0; i < msg_arr.length; i++) {
+              const ltm = letraToMatriz(msg_arr[i])
+              for (let l = 0; l < ltm.length; l++) {
+                  filasMatriz.push(filaMatrizArrBin(ltm[l]));
+              }
+  
+          }
+  
+          return filasMatriz;
+      }
+      function refrescaTodasFilas(fm) {
+          for (let m = 0; m < cantidadMatrices; m++) {
+              for (let c = 0; c < 8; c++) {
+                  muestraFilaMatriz(m, c, fm[8 * m + c])
+              }
+  
+          }
+  
+      }
+  
+  
+      function traduceLineaConsola(linea){
+          const datos = linea.split(',');
+          let d = {};
+          d.fecha=datos[0];
+          d.contador=datos[1];
+          d.arduino=datos[2];
+          d.sensor1=parseInt(datos[3]);
+          d.sensor2=parseInt(datos[4]);
+          d.sensor3=parseInt(datos[5]);
+          d.sensor4=parseInt(datos[6]);
+          return d;
+      }
+      let msg = " inicializando... ";
+      
+  
+      let filasMatriz = generaFilas(msg);
+  
+  
+      let matriz_v = 0;
+      let matriz_c = 0;
+      let matriz_c2 = 0;
+  
+      let consola_v = 25;
+      let consola_c = 0;
+      let consola_c2 = 0;
+  
+      let primeraLectura = true;
+      function play() {
+  
+  
+  
+          if (consola_c==consola_v){
+              
+              const linea = datos_sitio_txt[consola_c2];
+              
+              agregaLineaConsola(linea);
+              const datos = traduceLineaConsola(linea);
+              
+              const papa_txt = papa[rangoMedicionPapa(datos.sensor1)]
+             
+              const fer_txt = fer[rangoMedicionFer(datos.sensor2)];
+  
+              const aire_txt = aire[rangoMedicionAire(datos.sensor4)];
+              
+              const mensaje = ` ${aire_txt} ${fer_txt} ${papa_txt} `;
+              if (primeraLectura){
+                  msg = mensaje;
+                  filasMatriz = generaFilas(msg);
+                  primeraLectura = false;
+              }
+              agregaLineaTraduccionAire(mensaje);
+  
+              if(ContadorLectura ==20 ) {
+                  msg = mensaje;
+                  filasMatriz = generaFilas(msg);
+                  ContadorLectura=0;
+              }else{
+                  ContadorLectura++;
+              };
+              
+             
+              
+              consola_c2++;
+              if(consola_c2 == 181){
+                  consola_c2 = 0;
+              }
+              consola_c=0;
+          }else{
+              consola_c++;
+          }
+  
+          if (matriz_c==matriz_v){
+              refrescaMatrices();
+              matriz_c=0;
+          }else{
+              matriz_c++;
+          }
+       
+        
+  
+          // setTimeout(() => {
+          //     play();
+          // }, 5);
+          window.requestAnimationFrame(play);
+      }
+      function refrescaMatrices(){
+          refrescaTodasFilas(filasMatriz);
+          filasMatriz.push(filasMatriz.shift());
+   
+      }
+      play()
+  
+      let c_ciclo = 0;
+      // do {
+      //     c_ciclo++;
+      //     if (c_ciclo >= 100){
+      //         play();
+      //         requestAnimationFrame();
+      //         c_ciclo=0;
+      //     }
+      // } while (true);
+  
+  
+  //     let start, previousTimeStamp;
+  // let done = false;
+  
+  // function step(timeStamp) {
+  //   if (start === undefined) {
+  //     start = timeStamp;
+  //   }
+  //   const elapsed = timeStamp - start;
+  
+  //   if (previousTimeStamp !== timeStamp) {
+  //     // Math.min() is used here to make sure the element stops at exactly 200px
+  //     const count = Math.min(0.1 * elapsed, 200);
+  //     refrescaMatrices()
+  //    // if (count === 200) done = true;
+  //   }
+  
+  //   //if (elapsed < 2000) {
+  //     // Stop the animation after 2 seconds
+  //     previousTimeStamp = timeStamp;
+  //     if (!done) {
+  //       window.requestAnimationFrame(step);
+        
+  //     }
+  //   //}
+  // }
+  
+  // window.requestAnimationFrame(step);
+  
+  </script>
 </html>
